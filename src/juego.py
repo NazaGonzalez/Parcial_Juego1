@@ -115,6 +115,7 @@ TIEMPO_PODER = 15 * FPS
 
 PANTALLA = pygame.display.set_mode((TAM_PANT))
 pygame.display.set_caption("Juego1.")
+pygame.display.set_icon(pygame.image.load("./src/assets/onepiece.png"))
 
 #-----------------------direccion de movimiento---------------------
 
@@ -414,26 +415,26 @@ while JUGANDO:
     # impacto de los enemigos con el laberinto
     try:
         if AR:
-            for obstaculo in obstaculos:
-                for enemigo in enemigos:
+            for enemigo in enemigos:
+                for obstaculo in obstaculos:
                     if detectar_choque(enemigo["rect"], obstaculo["rect"]):
                         enemigo["rect"].top += 5
                         enemigo["direc"] = choice((AB, DE, IZ))
         if AB:
-            for obstaculo in obstaculos:
-                for enemigo in enemigos:
+            for enemigo in enemigos:
+                for obstaculo in obstaculos:
                     if detectar_choque(enemigo["rect"], obstaculo["rect"]):
                         enemigo["rect"].top -= 5
                         enemigo["direc"] = choice((AR, DE, IZ))
         if DE:
-            for obstaculo in obstaculos:
-                for enemigo in enemigos:
+            for enemigo in enemigos:
+                for obstaculo in obstaculos:
                     if detectar_choque(enemigo["rect"], obstaculo["rect"]):
                         enemigo["rect"].left -= 5
                         enemigo["direc"] = choice((AB, AR, IZ))
         if IZ:
-            for obstaculo in obstaculos:
-                for enemigo in enemigos:
+            for enemigo in enemigos:
+                for obstaculo in obstaculos:
                     if detectar_choque(enemigo["rect"], obstaculo["rect"]):
                         enemigo["rect"].left += 5
                         enemigo["direc"] = choice((AB, DE, AR))
