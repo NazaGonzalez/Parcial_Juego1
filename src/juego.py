@@ -1,217 +1,20 @@
-# Realizar el desarrollo de un juego estilo arcade utilizando Python y Pygame.
-
-# Descripción:
-# El juego debe incluir un jugador principal que puede moverse en la zona de juego sin salir de
-# los límites de la pantalla, una variedad de obstáculos o enemigos, la capacidad de disparar o
-# realizar acciones para defenderse, un sistema de vidas y puntuación, y la opción de incluir un
-# elemento especial o poderes. Deberán crear una pantalla de inicio con botones de opciones y
-# una pantalla de fin para mostrar la puntuación final del jugador.
-# Requisitos del Juego:
-# Pantalla de Inicio:
-# Debe haber una pantalla de inicio con un título y botones para comenzar el juego, ver las
-# opciones y salir del mismo.
-# Jugador Principal:
-# El jugador debe controlar un personaje o entidad que puede moverse en el espacio de juego.
-# El personaje debe ser capaz de interactuar de alguna manera con el entorno disparando,
-# saltando o realizando acciones para defenderse.
-# Obstáculos o Enemigos:
-# Debe haber una variedad de obstáculos o enemigos en la zona de juego que representen
-# desafíos para el jugador.
-# Los obstáculos o enemigos pueden ser de diferentes tipos y comportarse de manera única.
-# 
-# Vidas y Puntaje:
-# El juego debe tener un sistema de vidas. El jugador comienza con un número determinado de
-# vidas y pierde una vida cada vez que no logra superar un obstáculo o enemigo.
-# Debe haber un sistema de puntuación que aumenta cada vez que el jugador supera un
-# desafío o destruye un enemigo.
-# Elemento Especiales o Poderes:
-# Incluir un elemento especial o poderes que otorguen beneficios temporales al jugador.
-# Pantalla de Fin:
-# Cuando el jugador pierde todas sus vidas, se debe mostrar una pantalla de fin que muestre la
-# puntuación final del jugador.
-# Aplicar temas vistos en clases:
-# ● Tipos de datos avanzados: listas, tuplas, diccionarios, sets.
-# ● Funciones. El código debe estar debidamente modularizado y documentado. Tengan
-# en cuenta los objetivos de la programación con funciones. Realizar módulos.py para la
-# correcta organización de las mismas.
-# ● Manejo de strings: para normalizar datos, realizar validaciones, etc.
-# ● Archivos csv y Json. Se deberán utilizar los dos tipos de archivos tanto para persistir
-# datos (score, premios, etc) como para leer los elementos del juego (rutas de imágenes,
-# etc)
-# ● Manejo de excepciones. Deberán controlar por lo menos cuatro tipos de excepciones.
-# Pygame:
-# ● Imágenes. Según la temática del juego a desarrollar, habrá imágenes estáticas y/o
-# dinámicas (que van cambiando con cada acción del jugador)
-# ● Fuentes: toda interacción con el jugador implica que esos mensajes se muestran por la
-# ventana del juego. Por ejemplo: el texto de los botones, las vidas, score, etc.
-# ● Rectángulos: para representar botones, o cualquier elemento del juego que necesiten.
-# ● Manejo de eventos: teclas, mouse, eventos propios y temporizadores para la
-# interacción con el usuario.
-# ● Colisiones: entre el jugador principal y los objetos del juego (obstáculos, vidas, objetos
-# especiales).
-# ● Botones: por ejemplo para el manejo del menú principal
-# ● Sonidos y música: debe haber una música de fondo y ante distintas acciones, un
-# efecto de sonido distinto.
-# Consideraciones:
-# ● Aplicar las técnicas de programación vistas en clase.
-# ● Todo código que les hayamos compartido o que hayan obtenido de las clases, debe ser
-# reelaborado (intenten darle una impronta propia). No abusen del copy-paste.
-# 
-# ● ¿Pueden utilizar chat-gpt? Si, claro. Pero tengan en cuenta que toda pieza de código va
-# a ser evaluada, y si no la pueden defender, el parcial no estará aprobado.
-# ● La temática del juego no podrá ser la misma que la explicada en clases. por ejemplo: no
-# podrán realizar un arcade de naves y meteoritos.
-# ● El juego tiene que ser tipo arcade, pero no de plataformas, ya que para el segundo
-# parcial abordaremos esta modalidad.
-
 import pygame
+from config import *
 from funciones import *
 from random import *
 import sys
+import csv
+import os
 
 #-----inicializa todos los modulos de pygame con sus funciones-----
 pygame.init()
 
-
-#-----------------------generar mapa------------------------------
-
-TAM_CELDA = 50
-
-mapa = [
-    [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
-    [0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0],
-    [0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-    [1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1],
-    [0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0],
-    [1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-    [0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0],
-    [0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0],
-    [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
-]
-
-
-#-----------------config pantalla principal------------------------
-NEGRO = (0, 0, 0)
-BLANCO = (255, 255, 255)
-
-ANCHO = 800
-ALTO = 600
-
-TAM_PANT = (ANCHO, ALTO)
-CENT_PANT = (ANCHO // 2, ALTO //2)
-
-TAM_ENTIDADES = 38
-
-FPS = 60
-
-CONTADOR_NIVEL = 1
-CONTADOR_VIDAS = 3
-CONTADOR_PUNTOS = 0
-CONTADOR_PODER = 0
-TIEMPO_PODER = 15 * FPS
-
-PANTALLA = pygame.display.set_mode((TAM_PANT))
-pygame.display.set_caption("Juego1.")
-pygame.display.set_icon(pygame.image.load("./src/assets/onepiece.png"))
-
-#-----------------------direccion de movimiento---------------------
-
-MOV_AR = False
-MOV_AB = False
-MOV_DE = False
-MOV_IZ = False
-
-TOCA_TOP = False
-TOCA_BOT = False
-TOCA_RIG = False
-TOCA_LEF = False
-
-DE = 1
-IZ = 2
-AR = 3
-AB = 4
-DIRECCIONES_ENEMIGOS = (DE, IZ, AR, AB)
-
-VELOCIDAD = 2
-
-ATAQUE = False
-PODER = False
-
-#--------------------crear reloj----------------------------------
-RELOJ = pygame.time.Clock()
-
-#-------------------------seteo sonidos---------------------------
-try: 
-    SUENA_MUSICA = True
-    pygame.mixer.music.load("./src/assets/one_pce1.mp3")
-    
-    pygame.mixer.music.set_volume(1)
-
-    SONIDO_VICTORIA = pygame.mixer.Sound("./src/assets/franky.mp3")
-    SONIDO_MONEDA = pygame.mixer.Sound("./src/assets/moneda_son.mp3")
-    SONIDO_PODER = pygame.mixer.Sound("./src/assets/poder_son.mp3")
-    SONIDO_PODER.set_volume(0.5)
-    SONIDO_FINAL = pygame.mixer.Sound("./src/assets/one-piece-zoro.mp3")
-    SINIDO_INICIO = pygame.mixer.Sound("./src/assets/one-piece-luffy.mp3")
-except Exception as e:
-    print(f"¡Ocurrió un error al cargar los sonidos del juego!: {e}")
-
-MUSICA_PODER = False
-
-#---------------------cargar imagenes-----------------------------
-try:    
-    imagen_jugado1 = pygame.image.load("./src/assets/onepiece.png")
-    
-    imagen_muros = pygame.image.load("./src/assets/muro.jpg")
-    
-    imagen_enemigo1 = pygame.image.load("./src/assets/enemigo1.png")
-    imagen_enemigo2 = pygame.image.load("./src/assets/enemigo2.png")
-    imagen_enemigo3 = pygame.image.load("./src/assets/enemigo3.png")
-    imegen_enemigo4 = pygame.image.load("./src/assets/enemigo4.png")
-    
-    imagen_moneda = pygame.image.load("./src/assets/moneda.png")
-    
-    fondo = pygame.transform.scale(pygame.image.load("./src/assets/suelo.jpg"), TAM_PANT)
-    
-    imagen_pant_ini = pygame.transform.scale(pygame.image.load("./src/assets/fondo1.jpg"), TAM_PANT)
-    
-    imagen_vidas = pygame.image.load("./src/assets/corazon.png")
-    
-    imagen_puntos = pygame.image.load("./src/assets/puntos.png")
-    
-    imagen_ataque = pygame.image.load("./src/assets/cañon.png")
-    
-    imagen_poder = pygame.image.load("./src/assets/gomugomu.png")
-    
-    imagen_boton = pygame.image.load("./src/assets/cartel_mad.png")
-except Exception as e:
-    print(f"¡Ocurrió un error al cargar las imagenes del juego!: {e}")
 #------------------evento personalizado---------------------------
 CAMBIO_DIR_ENEMIGOS = pygame.USEREVENT + 1
 pygame.time.set_timer(CAMBIO_DIR_ENEMIGOS, 3000)
 
 NUEVO_PODER = pygame.USEREVENT + 2
 pygame.time.set_timer(NUEVO_PODER, 15000)
-
-
-#--------------------setear fuente--------------------------------
-FUENTE = pygame.font.SysFont("Comic Sans MS", 40)
-texto_vidas = FUENTE.render(":" + str(CONTADOR_VIDAS), True, NEGRO)
-
-marco_vidas = texto_vidas.get_rect()
-marco_vidas.left = 340
-marco_vidas.top = 350
-marco_vidas.width = marco_vidas.width - 50
-
-texto_puntos = FUENTE.render(":" + str(CONTADOR_PUNTOS), True, NEGRO)
-
-marco_puntos = texto_puntos.get_rect()
-marco_puntos.left = 410
-marco_puntos.top = 350
-marco_puntos.width = marco_puntos.width - 50
 
 #------------------------crear botones----------------------------
 
@@ -222,7 +25,7 @@ boton_salir = boton_menu("SALIR", (150, 50), (CENT_PANT[0], ALTO - 50), FUENTE, 
 cartel_salir = crear_bloque(0, 0, 250, 200, dir = 0, imagen = imagen_boton)
 
 #-------------------------creamos bloques-------------------------
-jugador = crear_bloque(ANCHO // 2, ALTO // 2, TAM_ENTIDADES, TAM_ENTIDADES, 0, imagen_jugado1)
+jugador = crear_bloque(ANCHO // 2, ALTO // 2, TAM_ENTIDADES, TAM_ENTIDADES, 0, imagen_jugador1)
 
 enemigos = []
 
@@ -236,10 +39,8 @@ obstaculos = listar_mapa(mapa, TAM_CELDA, 1)
 monedas = []
 monedas = listar_mapa(mapa, TAM_CELDA, 0, imagen_muros)
 for moneda in monedas:
-
     moneda["rect"].width = 20
     moneda["rect"].height = 20
-
     moneda["rect"].top = moneda["rect"].top + 10
     moneda["rect"].left = moneda["rect"].left + 10
 
@@ -247,37 +48,9 @@ vida = crear_bloque(300, 350, 55, 55, dir = 0, imagen = imagen_vidas)
 
 puntos = crear_bloque(380, 350, 40, 50, dir = 0, imagen = imagen_puntos)
 
-proyectiles = []
-
-poderes = []
-
-JUGANDO = False
 #-----------------------pantalla de inicio------------------------
 
-PANTALLA.blit(imagen_pant_ini, (0, 0))
-SINIDO_INICIO.play()
-
-PANTALLA.blit(imagen_jugado1, (150, 75))
-
-#boton inicio
-PANTALLA.blit(cartel_inicio["imagen"], (CENT_PANT[0] - 110, -50))
-PANTALLA.blit(cartel_salir["imagen"], (CENT_PANT[0] - 110, 460))
-
-PANTALLA.blit(boton_inicio["sup_texto"], boton_inicio["rect"])
-PANTALLA.blit(boton_salir["sup_texto"], boton_salir["rect"])
-
-pygame.display.flip()
-while not JUGANDO:
-    for event in pygame.event.get():
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_pos = pygame.mouse.get_pos()
-            if punto_en_rec(mouse_pos, boton_inicio["rect"]):
-                JUGANDO = True
-            if punto_en_rec(mouse_pos, boton_salir["rect"]):
-                JUGANDO = False
-                pygame.quit()
-                sys.exit() 
-
+JUGANDO = pantalla_inicio(PANTALLA, SONIDO_INICIO, TAM_PANT, cartel_inicio, cartel_salir, boton_inicio, boton_salir, JUGANDO)
 
 #quitar el cursor 
 pygame.mouse.set_visible(False)
@@ -316,17 +89,13 @@ while JUGANDO:
 
         if e.type == pygame.KEYUP:
             if e.key == pygame.K_w:
-                MOV_AR = False
-                TOCA_TOP = False                
+                MOV_AR = False          
             if e.key == pygame.K_s:
                 MOV_AB = False
-                TOCA_BOT = False
             if e.key == pygame.K_d:
-                MOV_DE = False
-                TOCA_RIG = False     
+                MOV_DE = False    
             if e.key == pygame.K_a:
                 MOV_IZ = False
-                TOCA_LEF = False
 
             if e.key == pygame.K_SPACE:
                 ATAQUE = False
@@ -362,25 +131,20 @@ while JUGANDO:
             for obstaculo in obstaculos:
                 if detectar_choque(jugador["rect"], obstaculo["rect"]):
                     jugador["rect"].top += 5
-                    TOCA_TOP = True
         if MOV_AB: 
             for obstaculo in obstaculos:
                 if detectar_choque(jugador["rect"], obstaculo["rect"]):
                     jugador["rect"].top -= 5
-                    TOCA_BOT = True
         if MOV_IZ:
             for obstaculo in obstaculos:
                 if detectar_choque(jugador["rect"], obstaculo["rect"]):
                     jugador["rect"].left += 5
-                    TOCA_LEF = True
         if MOV_DE:
             for obstaculo in obstaculos:
                 if detectar_choque(jugador["rect"], obstaculo["rect"]):
                     jugador["rect"].left -= 5
-                    TOCA_RIG = True
     except Exception as e:
         print(f"¡Ocurrió un error al detectar colisión del jugador!: {e}")
-
 
 
     # movimiento enemigos
@@ -594,6 +358,7 @@ while JUGANDO:
     PANTALLA.blit(texto_vidas, marco_vidas)
 
     # puntos
+
     PANTALLA.blit(puntos["imagen"], puntos["rect"])
     texto_puntos = FUENTE.render(":" + str(CONTADOR_PUNTOS), True, NEGRO)
     PANTALLA.blit(texto_puntos, marco_puntos)
@@ -606,6 +371,20 @@ while JUGANDO:
 #----------------------actualizar pantalla------------------------
     pygame.display.flip()
 
+if os.path.exists("puntuacion_mas_alta.csv"):
+    with open("puntuacion_mas_alta.csv", "r") as archivo_csv:
+        lector_csv = csv.reader(archivo_csv)
+        for fila in lector_csv:
+            PUNTUACION_MAS_ALTA = int(fila[0])
+
+
+if CONTADOR_PUNTOS > PUNTUACION_MAS_ALTA:
+    # Actualizar la puntuación más alta y guardarla en el archivo CSV
+    PUNTUACION_MAS_ALTA = CONTADOR_PUNTOS
+    with open("puntuacion_mas_alta.csv", "w", newline="") as archivo_csv:
+        escritor_csv = csv.writer(archivo_csv)
+        escritor_csv.writerow([PUNTUACION_MAS_ALTA])
+
 #-------------------------fin del juago---------------------------
 pygame.mixer.music.stop()
 
@@ -613,9 +392,10 @@ PANTALLA.blit(imagen_pant_ini, (0, 0))
 SONIDO_FINAL.play()
 
 pygame.mouse.set_visible(True)
-cartel(PANTALLA, "FIN DEL JUEGO", FUENTE, CENT_PANT, NEGRO)
-cartel(PANTALLA, "Precione una tecla para continuar", FUENTE, (ANCHO// 2, ALTO - 50), NEGRO)
-cartel(PANTALLA, "Puntuacion Final: " + str(CONTADOR_PUNTOS), FUENTE, (ANCHO// 2, 50), NEGRO)
+crear_cartel(PANTALLA, "FIN DEL JUEGO", FUENTE, CENT_PANT, NEGRO)
+crear_cartel(PANTALLA, "Precione una tecla para continuar", FUENTE, (ANCHO// 2, ALTO - 50), NEGRO)
+crear_cartel(PANTALLA, "Puntuacion Final: " + str(CONTADOR_PUNTOS), FUENTE, (ANCHO// 2, 75), NEGRO)
+crear_cartel(PANTALLA, "Puntuacion mas alta hasta ahora: " + str(PUNTUACION_MAS_ALTA), FUENTE, (ANCHO// 2, 25), NEGRO)
 
 pygame.display.flip()
 pausa()
