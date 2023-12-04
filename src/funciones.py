@@ -1,4 +1,6 @@
 import pygame
+import os
+import json
 import sys
 
 def crear_bloque(left = 0, top = 0, width = 50, heigth = 50, dir = 1, imagen = None)-> dict:
@@ -19,27 +21,6 @@ def crear_bloque(left = 0, top = 0, width = 50, heigth = 50, dir = 1, imagen = N
     if imagen:
         imagen = pygame.transform.scale(imagen, (width, heigth))    
     return {"rect": pygame.Rect(left, top, width, heigth), "direc": dir, "imagen": imagen}
-
-
-def listar_mapa(mapa: list, tam: float, bloque: int = 1, imagen: pygame.Surface = None)-> list:
-    """listar mapa
-
-    Args:
-        mapa (list): lsita de lista que represente el laverinto deseado
-        tam (float): tamaño deseado de cada bloque
-        bloque (int, optional): defina que valor representara un obstaculo. Defaults to 1.
-        imagen (pygame.Surface, optional): imagen de cada celda. Defaults to None.
-
-    Returns:
-        list: lista de objetos en base a la primer lista
-    """
-    rects_celdas = []
-    for y, fila in enumerate(mapa):#devlovera el contador de integraciones y la tupla con el inidice y valor
-        for x, celda in enumerate(fila):
-            if celda == bloque:
-                rects_celdas.append({"rect": pygame.Rect(x * tam, y * tam, tam, tam), "imagen": imagen})
-    
-    return rects_celdas
 
 
 def punto_en_rec(punto: tuple, rect: pygame.Rect)->bool:
@@ -69,17 +50,19 @@ def detectar_choque(rec1: pygame.rect.Rect, rec2: pygame.rect.Rect)->bool:
     Returns:
         bool: respuesta
     """
+    rta = False
     for r1, r2 in [(rec1, rec2), (rec2, rec1)]:
         if punto_en_rec(r1.topleft, r2) or \
            punto_en_rec(r1.topright, r2) or \
            punto_en_rec(r1.bottomleft, r2) or \
            punto_en_rec(r1.bottomright, r2):
-            return True
-        else:
-            return False
+            rta = True
+        return rta
         
 
-def pausa ():
+def pausa():
+    """pausa
+    """
     while True:
         for even in pygame.event.get():
             if even.type == pygame.QUIT:
@@ -90,7 +73,8 @@ def pausa ():
                 if even.key == pygame.K_ESCAPE:
                     pygame.quit()
                     exit()
-                return
+            return
+
  
 def esta(lista:list, item:str)->bool:
     """esta
@@ -110,12 +94,11 @@ def esta(lista:list, item:str)->bool:
         return rta
     
 
-
-def crear_cartel (pantalla: pygame.surface.Surface, texto: str, fuente: pygame.font.Font, coordenadas: tuple, color_fuente = (255, 255, 255)):
+def crear_cartel (ventana: pygame.surface.Surface, texto: str, fuente: pygame.font.Font, coordenadas: tuple, color_fuente = (255, 255, 255))-> None:
     """cartel
 
     Args:
-        pantalla (pygame.surface.Surface): superficie en la que se desea el cartel
+        ventana (pygame.surface.Surface): superficie en la que se desea el cartel
         texto (str): tecto del cartel
         fuente (pygame.font.Font): fuente del tecto
         coordenadas (tuple): punto de imagen
@@ -124,106 +107,71 @@ def crear_cartel (pantalla: pygame.surface.Surface, texto: str, fuente: pygame.f
     sup_texto = fuente.render(texto, True, color_fuente)
     rect_texto = sup_texto.get_rect()
     rect_texto.center = coordenadas
-    pantalla.blit(sup_texto, rect_texto)
+    ventana.blit(sup_texto, rect_texto)
 
 
-def boton_menu (texto: str, tam: tuple, coordenadas: tuple, fuente: pygame.font.Font, color: tuple)-> dict:
-    """boton menu
+
+
+def cargar_record(archivo_json: str, puntuacion_actual: int, nombre_jugador: str)-> str and int:
+    """cargar record
 
     Args:
-        texto (str): texto del boton
-        tam (tuple): tamaño del boton
-        coordenadas (tuple): espacio para el boton
+        archivo_json (str): nombre del archivo del record
+        puntuacion_actual (int): puntuacion final del jugador 
+        nombre_jugador (str): nombre del jugador
+
+    Returns:
+        str and int: nombre del portador del recor actual y los puntos
+    """
+    if os.path.exists(archivo_json):
+        with open(archivo_json, "r") as archivo:
+            lector = json.load(archivo)
+            nombre_record = lector["nombre"]
+            puntuacion_record = lector["puntos"]
+
+        if puntuacion_actual > puntuacion_record:
+            nombre_record = nombre_jugador
+            puntuacion_record = puntuacion_actual
+            with open(archivo_json, "w") as archivo: 
+                datos = {"nombre": nombre_record, "puntos": puntuacion_record}
+                json.dump(datos, archivo)
+    else:
+        with open(archivo_json, "w") as archivo: 
+                nombre_record = nombre_jugador
+                puntuacion_record = puntuacion_actual
+                datos = {"nombre": nombre_jugador, "puntos": puntuacion_record}
+                json.dump(datos, archivo)
+
+    return nombre_record, puntuacion_record
+
+
+def pantalla_fin(ventana: pygame.surface.Surface, foto_fondo: pygame.surface.Surface, sonido: pygame.mixer.Sound, fuente: pygame.font.Font, puntos_partida: int, puntos_mas_alto: int, nombre_mas_alto: str, color: tuple)-> None:
+    """pantalla fin
+
+    Args:
+        ventana (pygame.surface.Surface): pantalla de juego
+        foto_fondo (pygame.surface.Surface): imagen de fondo deseada
+        sonido (pygame.mixer.Sound): sonido de derrota
         fuente (pygame.font.Font): fuente del texto
-        color (tuple): color
-
-    Returns:
-        dict: diccionario con los datos del boton deseado
+        puntos_partida (int): puntuacion final del jugador
+        puntos_mas_alto (int): record establesido
+        nombre_mas_alto (str): nombre del portador del record
+        color (tuple): color del texto
     """
-    sup_texto = fuente.render(texto, True, color)
-    rect_texto = sup_texto.get_rect()
+    rectangulo_ventana = ventana.get_rect()
+    pygame.mixer.music.stop()
 
-    boton = pygame.Surface(tam)#crea una superficie con las caractaristicas indicadas
-    rect_boton = boton.get_rect()
+    ventana.blit(foto_fondo, (0, 0))
+    sonido.play()
 
-    rect_boton.center = coordenadas
-    rect_texto.center = rect_boton.center
-
-    boton.blit(sup_texto, rect_boton)
-
-    return {"boton": boton, "rect": rect_boton, "sup_texto": sup_texto, "rect_texto": rect_texto, "color": color}
-
-
-
-
-def botones_inicio(ventana: pygame.surface.Surface, cart_jugar: dict, cart_salir: dict, bot_jugar: dict, bot_salir: dict, tam_ventana: tuple):
-    """botones inicio
-
-    Args:
-        ventana (pygame.surface.Surface): ventana en la cual imprimir los botones
-        cart_jugar (dict): fondo del boton inicio
-        cart_salir (dict): fondo del boton salir
-        bot_jugar (dict): boton de inicio
-        bot_salir (dict): boton de fin
-        tam_ventana (tuple): tamalo de la ventana
-    """
-    cent_ventana = (tam_ventana[0] // 2, tam_ventana[1] // 2)
-
-    ventana.blit(cart_jugar["imagen"], (cent_ventana[0] - 110, -50))
-    ventana.blit(cart_salir["imagen"], (cent_ventana[0] - 110, 460))
-
-    ventana.blit(bot_jugar["sup_texto"], bot_jugar["rect"])
-    ventana.blit(bot_salir["sup_texto"], bot_salir["rect"])
-
-
-def activ_botones(bot_jugar: dict, bot_salir: dict, jugar: bool)-> bool:
-    """activ botones
-
-    Args:
-        bot_jugar (dict): boton de incio
-        bot_salir (dict): boton de fin
-        jugar (bool): variable en la que se almasena respuesta
-
-    Returns:
-        bool: valor para continuar o cerrar la app
-    """
-    while not jugar:
-        for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                if punto_en_rec(mouse_pos, bot_jugar["rect"]):
-                    jugar = True
-                    return jugar
-                if punto_en_rec(mouse_pos, bot_salir["rect"]):
-                    jugar = False
-                    pygame.quit()
-                    sys.exit() 
-
-
-def pantalla_inicio(ventana: pygame.surface.Surface, audio: pygame.mixer.Sound, tam_ventana: tuple, cart_jugar: dict, cart_salir: dict, bot_jugar: dict, bot_salir: dict, jugar: bool):
-    """pantalla inicio
-
-    Args:
-        ventana (pygame.surface.Surface): ventana en la que imprimir la pantalla 
-        audio (pygame.mixer.Sound): musica de fondo deseada
-        tam_ventana (tuple): tamaño de la pantalla 
-        cart_jugar (dict): fondo del boton de inicio
-        cart_salir (dict): fondo del boton de fin
-        bot_jugar (dict): boton de inicio
-        bot_salir (dict): boton de fin
-        jugar (bool): valor de respuesta
-
-    Returns:
-        bool: valor para continuar o cerrar la app
-    """
-    ventana.blit(pygame.transform.scale(pygame.image.load("./src/assets/fondo1.jpg"), tam_ventana), (0, 0))
-    ventana.blit(pygame.image.load("./src/assets/onepiece.png"), (150, 75))
-    audio.play()
-
-    botones_inicio(ventana, cart_jugar, cart_salir, bot_jugar, bot_salir, tam_ventana)
+    pygame.mouse.set_visible(True)
+    crear_cartel(ventana, "FIN DEL JUEGO", fuente, (rectangulo_ventana.width // 2, rectangulo_ventana.height // 2), color)
+    crear_cartel(ventana, "Presione una tecla para continuar", fuente, (rectangulo_ventana.width // 2, rectangulo_ventana.height - 50), color)
+    crear_cartel(ventana, "Puntuacion Final: " + str(puntos_partida), fuente, (rectangulo_ventana.width // 2, 25), color)
+    crear_cartel(ventana, "El record es de " + nombre_mas_alto + ". Con " + str(puntos_mas_alto) + " puntos", fuente, (rectangulo_ventana.width // 2, 75), color)
 
     pygame.display.flip()
+    pausa()
+    pygame.quit()
+    sys.exit() 
 
-    jugar = activ_botones(bot_jugar, bot_salir, jugar)
-
-    return jugar

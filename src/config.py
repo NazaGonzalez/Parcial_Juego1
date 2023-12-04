@@ -1,6 +1,11 @@
 import pygame
+from funciones import *
+from mapa import *
+from inicio import *
 pygame.init()
 #-----------------------generar mapa------------------------------
+NOMBRE_JUGADOR = input("Ingrese su nombre (hasta 4 caracteres): ")[:4]
+
 TAM_CELDA = 50
 mapa = [
     [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
@@ -35,7 +40,6 @@ FPS = 60
 CONTADOR_NIVEL = 1
 CONTADOR_VIDAS = 3
 CONTADOR_PUNTOS = 0
-PUNTUACION_MAS_ALTA = 0
 CONTADOR_PODER = 0
 TIEMPO_PODER = 15 * FPS
 
@@ -54,12 +58,12 @@ DE = 1
 IZ = 2
 AR = 3
 AB = 4
-DIRECCIONES_ENEMIGOS = (DE, IZ, AR, AB)
+DIRECCIONES_ENEMIGOS = (AR, AB, DE, IZ)
 
 VELOCIDAD = 2
 
 ATAQUE = False
-PODER = False
+#PODER = False
 
 #-----------------config pantalla principal------------------------
 PANTALLA = pygame.display.set_mode((TAM_PANT))
@@ -71,8 +75,8 @@ RELOJ = pygame.time.Clock()
 
 
 #-------------------------seteo sonidos---------------------------
-SUENA_MUSICA = True
-MUSICA_PODER = False
+SUENA_MUSICA_PODER = False
+
 try: 
     
     pygame.mixer.music.load("./src/assets/one_pce1.mp3")
@@ -132,3 +136,42 @@ marco_puntos = texto_puntos.get_rect()
 marco_puntos.left = 410
 marco_puntos.top = 350
 marco_puntos.width = marco_puntos.width - 50
+
+#------------------------crear botones----------------------------
+
+boton_inicio = boton_menu("INICIAR", (150, 50), (CENT_PANT[0], 50), FUENTE, NEGRO)
+cartel_inicio = crear_bloque(0, 0, 250, 200, dir = 0, imagen = imagen_boton)
+
+boton_salir = boton_menu("SALIR", (150, 50), (CENT_PANT[0], ALTO - 50), FUENTE, NEGRO)
+cartel_salir = crear_bloque(0, 0, 250, 200, dir = 0, imagen = imagen_boton)
+
+#-------------------------creamos bloques-------------------------
+jugador = crear_bloque(ANCHO // 2, ALTO // 2, TAM_ENTIDADES, TAM_ENTIDADES, 0, imagen_jugador1)
+jugador["poder"] = False
+
+enemigos = []
+
+enemigos.append(crear_bloque(0, 550, TAM_ENTIDADES, TAM_ENTIDADES, choice(DIRECCIONES_ENEMIGOS), imagen_enemigo1))
+enemigos.append(crear_bloque(750, 0, TAM_ENTIDADES, TAM_ENTIDADES, choice(DIRECCIONES_ENEMIGOS), imagen_enemigo2))
+enemigos.append(crear_bloque(750, 550, TAM_ENTIDADES, TAM_ENTIDADES, choice(DIRECCIONES_ENEMIGOS), imagen_enemigo3))
+enemigos.append(crear_bloque(0, 0, TAM_ENTIDADES, TAM_ENTIDADES, choice(DIRECCIONES_ENEMIGOS), imegen_enemigo4))
+
+obstaculos = listar_mapa(mapa, TAM_CELDA, 1)
+
+monedas = []
+monedas = listar_mapa(mapa, TAM_CELDA, 0, imagen_muros)
+for moneda in monedas:
+    moneda["rect"].width = 20
+    moneda["rect"].height = 20
+    moneda["rect"].top = moneda["rect"].top + 10
+    moneda["rect"].left = moneda["rect"].left + 10
+
+vida = crear_bloque(300, 350, 55, 55, dir = 0, imagen = imagen_vidas)
+
+puntos = crear_bloque(380, 350, 40, 50, dir = 0, imagen = imagen_puntos)
+
+#-----------------------pantalla de inicio------------------------
+
+JUGANDO = pantalla_inicio(PANTALLA, SONIDO_INICIO, TAM_PANT, cartel_inicio, cartel_salir, boton_inicio, boton_salir, JUGANDO)
+
+
